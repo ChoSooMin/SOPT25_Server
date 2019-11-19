@@ -4,22 +4,7 @@ const router = express.Router();
 const statusCode = require('../module/statusCode');
 const responseMessage = require('../module/responseMessage');
 const authUtil = require('../module/authUtil');
-
-// database 연동 전 메모리에서 사용자 정보 관리
-const infoMap = [
-  {
-    id : 'sopt', 
-    pwd : '1234',
-    name : 'sopt',
-    phone : '010-1234-1234'
-  },
-  {
-    id : 'soomin', 
-    pwd : '1234',
-    name : 'soomin',
-    phone : '010-1234-5678'
-  }
-];
+const User = require('../model/user');
 
 /**
  * 로그인
@@ -42,33 +27,14 @@ router.post('/signin', (req, res) => {
   }
 
   /**
-   * TODO 2) 존재하는 ID인지 확인 (실패시 400 Error)
+   * User 모듈을 사용하여 로그인
    */
-  const arr = infoMap.filter(it => it.id == id); // 존재하는 ID인가?
-  if (arr.length == 0) { // ID가 존재하지 않는다.
-    res.status(statusCode.BAD_REQUEST)
-      .send(authUtil.successFalse(responseMessage.NO_USER));
-
-    return;
-  }
-
-  /**
-   * TODO 3) 비밀번호 일치하는지 확인 (실패시 401 Error)
-   */
-  const user = arr[0]; // ID가 존재할 경우, 사용자 정보를 가져온다.
-  if (user.pwd != pwd) {
-    res.status(statusCode.UNAUTHORIZED)
-      .send(authUtil.successFalse(responseMessage.MISS_MATCH_PW));
-    
-    return;
-  }
-
-  /**
-   * TODO 4) 유저 정보 응답하기
-   * 위의 절차들을 다 거치고 난 후이므로 로그인 성공
-   */
-  res.status(statusCode.OK)
-    .send(authUtil.successTrue(responseMessage.SIGN_IN_SUCCESS, user));
+  User.signin(id, pwd)
+    .then(({code, json}) => { res.status(code).send(json) })
+    .catch(err => {
+      console.log(err);
+      res.status(statusCode.INTERNAL_SERVER_ERROR, authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR));
+    });
 });
 
 /**
@@ -94,32 +60,14 @@ router.post('/signup', (req, res) => {
   }
 
   /**
-   * TODO 2) 존재하는 ID인지 확인 (실패시 401 Error)
+   * User 모듈을 사용하여 회원가입
    */
-  const arr = infoMap.filter(it => it.id == id);
-  if (arr.length > 0) {
-    res.status(statusCode.UNAUTHORIZED)
-      .send(authUtil.successFalse(responseMessage.ALREADY_ID));
-
-    return;
-  }
-
-  /**
-   * TODO 3) 사용자 정보를 저장
-   */
-  const userIdx = infoMap.push({
-    id,
-    pwd,
-    name,
-    phone
-  });
-  console.log(infoMap);
-
-  /**
-   * TODO 4) 새로 추가된 유저 index 반환
-   */
-  res.status(statusCode.OK)
-    .send(authUtil.successTrue(responseMessage.SIGN_UP_SUCCESS, userIdx));
+  User.signup(id, pwd, name, phone)
+    .then(({code, json}) => { res.status(code).send(json) })
+    .catch(err => {
+      console.log(err);
+      res.status(statusCode.INTERNAL_SERVER_ERROR, authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR));
+    });
 });
 
 module.exports = router;
