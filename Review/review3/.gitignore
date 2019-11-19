@@ -1,2 +1,3 @@
 config/*
 dbConfig
+node_modules
