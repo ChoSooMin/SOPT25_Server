@@ -1,5 +1,5 @@
 #config 파일
-config
+config/*
 awsconfig.json
 multer.js
 secretKey.js
