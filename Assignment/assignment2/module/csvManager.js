@@ -13,9 +13,9 @@ const filePath = './public/csvs/'; // assignment2/public/csv 폴더에 filePath 
 
 const csvManager = {
     // 파일 쓰기
-    write : (fileName, json) => { // fileName으로 파일 이름을 지정할 수 있다.
+    write : (fileName, jsonArray) => { // fileName으로 파일 이름을 지정할 수 있다.
         return new Promise((resolve, reject) => {
-            const resultCsv = json2csv.parse(json);
+            const resultCsv = json2csv.parse(jsonArray);
 
             fs.writeFile(path.join(filePath, fileName), resultCsv, (err) => { // fs 모듈을 사용하여 file에 쓴다.
                 if (err) {

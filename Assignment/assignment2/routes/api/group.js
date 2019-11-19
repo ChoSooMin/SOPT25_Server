@@ -90,6 +90,11 @@ router.get('/:groupIdx', async (req, res) => {
         console.log(err);
         res.status(500).send('Internal Server Error');
     }
-})
+});
+
+/**
+ * Level 3) 구성원들의 조원을 섞어주는 모듈(groupMixer)을 만들어 사용
+ */
+
 
 module.exports = router;
