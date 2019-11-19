@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const csvManager = require('../../module/csvManager'); // 내가 생성한 모듈인 csvManager를 가져온다.
+const groupMixer = require('../../module/groupMixer'); // groupMixer 모듈을 가져온다.
 
 /**
  * 비동기 패턴은 Async/Await 사용
@@ -94,7 +95,30 @@ router.get('/:groupIdx', async (req, res) => {
 
 /**
  * Level 3) 구성원들의 조원을 섞어주는 모듈(groupMixer)을 만들어 사용
+ * 
+ * 1. member.csv 파일을 읽어 memberArray(json 배열)로 가져온다.
+ * 2. groupMixer 모듈을 사용하여 받아온 memberArray를 새롭게 섞어주고, 새로 섞여 생성된 mixedArray를 받아온다.
+ * 3. csvManager 모듈을 사용하여 기존의 member.csv 파일에 새로운 mixedArray를 write 해준다.
  */
+router.get('/mix', async (req, res) => {
+    try {
+        /**
+         * member.csv 파일을 읽어 가져옴
+         */
+        const memberArray = await csvManager.read('member.csv');
 
+        const mixedArray = groupMixer.mix(memberArray); // groupMixer 모듈로 조원을 섞은 새로운 array를 가져옴
+        await csvManager.write('member.csv', mixedArray); // 조원을 섞은 새로운 배열을 csvManager.write을 사용하여 member.csv에 넣어준다.
+
+        /**
+         * @todo 이 부분 왜 제대로 응답이 안가지지,, (postman에 'success mixing group'이라는 응답이 안온다.)
+         */
+        res.status(200).send('success mixing group');
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 module.exports = router;
