@@ -100,18 +100,24 @@ router.get('/:groupIdx', async (req, res) => {
  * 2. groupMixer 모듈을 사용하여 받아온 memberArray를 새롭게 섞어주고, 새로 섞여 생성된 mixedArray를 받아온다.
  * 3. csvManager 모듈을 사용하여 기존의 member.csv 파일에 새로운 mixedArray를 write 해준다.
  */
-router.get('/mix', async (req, res) => {
+router.post('/mixGroup', async (req, res) => {
     try {
         /**
          * member.csv 파일을 읽어 가져옴
          */
+        
         const memberArray = await csvManager.read('member.csv');
+        const mixedArray = await groupMixer.mix(memberArray); // groupMixer 모듈로 조원을 섞은 새로운 array를 가져옴
 
-        const mixedArray = groupMixer.mix(memberArray); // groupMixer 모듈로 조원을 섞은 새로운 array를 가져옴
-        await csvManager.write('member.csv', mixedArray); // 조원을 섞은 새로운 배열을 csvManager.write을 사용하여 member.csv에 넣어준다.
+        if (!memberArray || !mixedArray) {
+            console.log(`read error : ${err}`);
+            res.send(`read error : ${err}`);
+        }
 
+        csvManager.write('member.csv', mixedArray); // 조원을 섞은 새로운 배열을 csvManager.write을 사용하여 member.csv에 넣어준다.
         /**
-         * @todo 이 부분 왜 제대로 응답이 안가지지,, (postman에 'success mixing group'이라는 응답이 안온다.)
+         * 오류) 이 부분 왜 제대로 응답이 안가지지,, (postman에 'success mixing group'이라는 응답이 안온다.)
+         * 해결) router.get으로 해서 문제였다. post 방식으로 해야 함
          */
         res.status(200).send('success mixing group');
     }

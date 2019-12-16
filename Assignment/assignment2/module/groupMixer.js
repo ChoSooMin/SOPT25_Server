@@ -7,15 +7,21 @@
 const groupMixer = {
     mix : (memberArray) => {
         return new Promise((resolve, reject) => {
-            const mixedArray = memberArray.sort(function() {
-                return Math.random() - 0.5;
-            });
-
-            resolve(mixedArray);
-
-            if (err) {
-                reject(err);
+            if (memberArray instanceof Array) { // 들어온 변수 값이 Array 객체인지 확인해야 함
+                const mixedArray = memberArray.sort(function() {
+                    return Math.random() - 0.5;
+                });
+    
+                resolve(mixedArray);
+    
+                if (err) {
+                    reject(err);
+                }
             }
+            else {
+                console.log(`not Array Object`);
+            }
+            
         });
     }
 };
