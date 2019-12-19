@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const statusCode = require('../module/statusCode');
-const responseMessage = require('../module/responseMessage');
-const authUtil = require('../module/authUtil');
+const statusCode = require('../../module/statusCode');
+const responseMessage = require('../../module/responseMessage');
+const authUtil = require('../../module/authUtil');
 
-const Blog = require('../model/Blog');
+const Blog = require('../../model/Blog');
 
 /**
  * [GET] localhost/blogs
