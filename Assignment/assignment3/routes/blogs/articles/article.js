@@ -13,24 +13,16 @@ const THIS_LOG = '게시글';
     게시글 전체 보기
 */
 router.get('/', (req, res) => {
-    /*
-        TODO 1 Model에서 값 받아오기
-        동기 or 비동기 자유롭게 구현
-    */
-    Article.readAll();
-    /* 
-        TODO 2 결과값 출력
-        result는 sample 입니다!
-    */
-    const result = [{
-        articleIdx: 0,
-        title: 'nodejs 시작하기',
-        content: 'nodejs란...',
-        blogIdx
-    }];
-    res.status(statusCode.OK).send(authUtil.successTrue(
-        responseMessage.X_READ_ALL_SUCCESS(THIS_LOG),
-        result));
+    const { blogIdx } = req.params;
+    
+    Article.readAll(blogIdx)
+    .then(({ code, json }) => {
+        res.status(code).send(json);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.BAD_REQUEST));
+    });
 });
 /*
     [GET] localhost/blogs/${blogIdx}/articles/${articleIdx}
@@ -38,54 +30,43 @@ router.get('/', (req, res) => {
 */
 router.get('/:articleIdx', (req, res) => {
     const {blogIdx, articleIdx} = req.params;
-    // TODO 1 parameter null check
     
-    /*
-        TODO 2 Model에서 값 받아오기
-        동기 or 비동기 자유롭게 구현
-    */
-    Article.read(articleIdx);
-    /* 
-        TODO 3 결과값 출력
-        result는 sample 입니다!
-    */
-    const result = {
-        articleIdx,
-        blogIdx,
-        title: 'nodejs 시작하기',
-        content: 'nodejs란...'
-    };
-    res.status(statusCode.OK).send(authUtil.successTrue(
-        responseMessage.X_READ_SUCCESS(THIS_LOG),
-        result));
+    if (!blogIdx || !articleIdx) {
+        res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
+        return;
+    }
+
+    Article.read(articleIdx)
+    .then(({ code, json }) => {
+        res.status(code).send(json);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(statusCode.BAD_REQUEST, responseMessage.BAD_REQUEST);
+    });
 });
 /*
     [POST] localhost/blogs/${blogIdx}/articles
     게시글 생성하기
 */
 router.post('/', (req, res) => {
-    const {blogIdx} = req.params;
+    const { blogIdx } = req.params;
     // TODO 1 parameter null check
-    const {} = req.body;
-    const json = {};
-    /*
-        TODO 2 Model에서 값 받아오기
-        동기 or 비동기 자유롭게 구현
-    */
-    Article.update(json);
-    /* 
-        TODO 3 결과값 출력
-        result는 sample 입니다!
-    */
-    const result = {
-        articleIdx: 0,
-        title: 'nodejs 시작하기',
-        content: 'nodejs란...',
-        blogIdx: blogIdx
-    };
-    res.status(statusCode.OK).send(authUtil.successTrue(
-        responseMessage.X_CREATE_SUCCESS(THIS_LOG),
-        result));
+    const { title, content } = req.body;
+
+    if (!blogIdx || !title || !content) {
+        res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
+        return;
+    }
+
+    Article.create(title, content, blogIdx)
+    .then(({ code, json }) => {
+        res.status(code).send(json);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR);
+    });
 });
 /*
     [PUT] localhost/blogs/${blogIdx}/articles
@@ -94,26 +75,21 @@ router.post('/', (req, res) => {
 router.put('/', (req, res) => {
     const {blogIdx} = req.params;
     // TODO 1 parameter null check
-    const {} = req.body;
-    const json = {};
-    /*
-        TODO 2 Model에서 값 받아오기
-        동기 or 비동기 자유롭게 구현
-    */
-    Article.update(json);
-    /* 
-        TODO 3 결과값 출력
-        result는 sample 입니다!
-    */
-    const result = {
-        articleIdx: 0,
-        title: 'nodejs 시작하기',
-        content: 'nodejs란...',
-        blogIdx: blogIdx
-    };
-    res.status(statusCode.OK).send(authUtil.successTrue(
-        responseMessage.X_UPDATE_SUCCESS(THIS_LOG),
-        result));
+    const {articleIdx, title, content} = req.body;
+    
+    if (!articleIdx || !title || !content || !blogIdx) {
+        res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
+        return;
+    }
+
+    Article.update(articleIdx, title, content)
+    .then(({ code, json }) => {
+        res.status(code).send(json);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(statusCode.INTERNAL_SERVER_ERROR, authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR));
+    });
 });
 /*
     [DELETE] localhost/blogs/${blogIdx}/articles
@@ -121,18 +97,21 @@ router.put('/', (req, res) => {
 */
 router.delete('/', (req, res) => {
     // TODO 1 parameter null check
-    const {} = req.body;
-    const json = {};
-    /*
-        TODO 2 Model에서 값 받아오기
-        동기 or 비동기 자유롭게 구현
-    */
-    Article.delete(json);
-    /* 
-        TODO 3 결과값 출력
-        result는 sample 입니다!
-    */
-    res.status(statusCode.OK).send(authUtil.successTrue(
-        responseMessage.X_DELETE_SUCCESS(THIS_LOG)));
+    const { blogIdx } = req.params; // 이건 확인할 필요 없나 ..?
+    const { articleIdx } = req.body;
+    
+    if (!articleIdx) {
+        res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
+        return;
+    }
+
+    Article.remove(articleIdx)
+    .then(({ code, json }) => {
+        res.status(code).send(json);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(statusCode.INTERNAL_SERVER_ERROR, authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR));
+    });
 });
 module.exports = router;
