@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router({
     mergeParams: true
 });
-const statusCode = require('../../../module/statusCode');
-const responseMessage = require('../../../module/responseMessage');
-const authUtil = require('../../../module/authUtil');
+const statusCode = require('../../../module/utils/statusCode');
+const responseMessage = require('../../../module/utils/responseMessage');
+const authUtil = require('../../../module/utils/authUtil');
 const Article = require('../../../model/Article');
 
 const THIS_LOG = '게시글';

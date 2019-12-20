@@ -1,56 +1,65 @@
-const statusCode = require('../module/statusCode');
-const responseMessage = require('../module/responseMessage');
-const authUtil = require('../module/authUtil');
+const statusCode = require('../module/utils/statusCode');
+const responseMessage = require('../module/utils/responseMessage');
+const authUtil = require('../module/utils/authUtil');
+const pool = require('../module/db/pool');
 
-const blogArr = [
-    {
-        name : `Soomin's blog1`,
-        address : 'https://github.com/ChoSooMin',
-        ownerId : 'soomin1'
-    },
-    {
-        name : `Soomin's blog2`,
-        address : 'https://github.com/ChoSooMin',
-        ownerId : 'soomin2'
-    }
-];
+const table = 'blog';
 
 const blog = {
     /**
      * blog 객체 생성
      */
-    create: (name, address, ownerId) => {
-        return new Promise((resolve, reject) => {
-            const blogIdx = blogArr.push({
-                name,
-                address,
-                ownerId
-            });
+    create: (name, url) => {
+        
+        return new Promise( async(resolve, reject) => {
+            const fields = 'name, url'
+            const values = `'${name}', '${url}'`;
+            const query = `INSERT INTO ${table}(${fields}) VALUES(${values})`;
+            console.log(query);
+
+            const result = await pool.queryParam_None(query);
+            console.log(result);
+    
+            if (!result) {
+                resolve({
+                    code : statusCode.INTERNAL_SERVER_ERROR,
+                    json : authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR)
+                });
+
+                return;
+            }
 
             resolve({
                 code : statusCode.OK,
-                json : authUtil.successTrue(responseMessage.BLOG_CREATE_SUCCESS, blogIdx)
-            })
+                json : authUtil.successTrue(responseMessage.BLOG_CREATE_SUCCESS, result)
+            });
         });
+        
+
+
     },
 
     /**
      * blogArr의 특정 인덱스 데이터 받아오기
      */
     read: (blogIdx) => {
-        return new Promise((resolve, reject) => {
-            // blogIdx가 blogArr의 길이보다 크거나 같으면 잘못된 인덱스
-            if (blogIdx >= blogArr.length) {
+        return new Promise( async(resolve, reject) => {
+            const query = `SELECT * FROM ${table} WHERE blogIdx=${blogIdx}`;
+            const result = await pool.queryParam_None(query);
+            console.log(result);
+    
+            if (!result) {
                 resolve({
-                    code : statusCode.BAD_REQUEST,
-                    json : authUtil.successFalse(responseMessage.BAD_REQUEST)
+                    code : statusCode.INTERNAL_SERVER_ERROR,
+                    json : authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR)
                 });
+
                 return;
             }
 
             resolve({
                 code : statusCode.OK,
-                json : authUtil.successTrue(responseMessage.BLOG_READ_SUCCESS, blogArr[blogIdx])
+                json : authUtil.successTrue(responseMessage.BLOG_READ_SUCCESS, result)
             });
         });
     },
@@ -59,43 +68,51 @@ const blog = {
      * blogArr의 모든 데이터 받아오기
      */
     readAll: () => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
+            const query = `SELECT * FROM ${table}`;
+            const result = await pool.queryParam_None(query);
+            console.log(result);
+    
+            if (!result) {
+                resolve({
+                    code : statusCode.INTERNAL_SERVER_ERROR,
+                    json : authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR)
+                });
+
+                return;
+            }
+
             resolve({
                 code : statusCode.OK,
-                json : authUtil.successTrue(responseMessage.BLOG_READ_ALL_SUCCESS, blogArr)
+                json : authUtil.successTrue(responseMessage.BLOG_READ_ALL_SUCCESS, result)
             });
         });
+        
     },
 
     /**
      * 특정 blog 데이터 수정
      */
-    update: (blogIdx, name, address, ownerId) => {
-        return new Promise((resolve, reject) => {
-            // blogIdx가 blogArr의 길이와 크거나 같으면 잘못된 인덱스
-            if (blogIdx >= blogArr.length) {
+    update: (blogIdx, name, url) => {
+        return new Promise( async(resolve, reject) => {
+            const query = `UPDATE ${table} SET name='${name}', url='${url}' WHERE blogIdx=${blogIdx}`;
+            console.log(query);
+
+            const result = await pool.queryParam_None(query);
+            console.log(result);
+    
+            if (!result) {
                 resolve({
-                    code : statusCode.BAD_REQUEST,
-                    json : authUtil.successFalse(responseMessage.BAD_REQUEST)
+                    code : statusCode.INTERNAL_SERVER_ERROR,
+                    json : authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR)
                 });
+
                 return;
             }
-
-            // ownerId 확인
-            if (blogArr[blogIdx].ownerId != ownerId) {
-                resolve({
-                    code : statusCode.BAD_REQUEST,
-                    json : authUtil.successFalse(responseMessage.MISS_MATCH_OWNER)
-                });
-                return;
-            }
-
-            blogArr[blogIdx].name = name;
-            blogArr[blogIdx].address = address;
             
             resolve({
                 code : statusCode.OK,
-                json : authUtil.successTrue(responseMessage.BLOG_UPDATE_SUCCESS, blogArr[blogIdx])
+                json : authUtil.successTrue(responseMessage.BLOG_UPDATE_SUCCESS, result)
             });
         });
     },
@@ -104,25 +121,25 @@ const blog = {
      * 특정 blog 삭제
      */
     remove: (blogIdx) => {
-        return new Promise((resolve, reject) => {
+        return new Promise( async(resolve, reject) => {
             console.log(blogIdx);
-            // idx 확인
-            if (blogIdx >= blogArr.length) {
-                console.log('blogIdx more than length')
+
+            const query = `DELETE FROM ${table} WHERE blogIdx=${blogIdx}`;
+            const result = await pool.queryParam_None(query);
+
+            if (!result) {
                 resolve({
-                    code : statusCode.BAD_REQUEST,
-                    json : authUtil.successFalse(responseMessage.BAD_REQUEST)
+                    code : statusCode.INTERNAL_SERVER_ERROR,
+                    json : authUtil.successFalse(responseMessage.INTERNAL_SERVER_ERROR)
                 });
+
                 return;
             }
 
-            blogArr.splice(blogIdx, 1);
-            console.log('splice success');
             resolve({
                 code : statusCode.OK,
-                json : authUtil.successTrue(responseMessage.BLOG_DELETE_SUCCESS, blogArr)
+                json : authUtil.successTrue(responseMessage.BLOG_DELETE_SUCCESS, result)
             });
-            console.log('resolve success');
         });
     }
 };

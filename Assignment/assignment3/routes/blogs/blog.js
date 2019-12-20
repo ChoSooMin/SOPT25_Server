@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const statusCode = require('../../module/statusCode');
-const responseMessage = require('../../module/responseMessage');
-const authUtil = require('../../module/authUtil');
+const statusCode = require('../../module/utils/statusCode');
+const responseMessage = require('../../module/utils/responseMessage');
+const authUtil = require('../../module/utils/authUtil');
 
 const Blog = require('../../model/Blog');
 
@@ -54,16 +54,15 @@ router.post('/', (req, res) => {
     // parameter null check
     const {
         name,
-        address,
-        ownerId
+        url
     } = req.body;
     
-    if (!name || !address || !ownerId) {
+    if (!name || !url) {
         res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
         return;
     }
     
-    Blog.create(name, address, ownerId)
+    Blog.create(name, url)
     .then(({ code, json }) => {
         res.status(code).send(json);
     })
@@ -82,16 +81,15 @@ router.put('/', (req, res) => {
     const {
         blogIdx,
         name,
-        address,
-        ownerId
+        url
     } = req.body;
     
-    if (!blogIdx || !name || !address || !ownerId) {
+    if (!blogIdx || !name || !url) {
         res.status(statusCode.BAD_REQUEST, authUtil.successFalse(responseMessage.NULL_VALUE));
         return;
     }
     
-    Blog.update(blogIdx, name, address, ownerId)
+    Blog.update(blogIdx, name, url)
     .then(({ code, json }) => {
         res.status(code).send(json);
     })
@@ -104,7 +102,6 @@ router.put('/', (req, res) => {
 /**
  * [DELETE] localhost/blogs/
  * 블로그 삭제하기
- * @TODO 500 error
  */
 router.delete('/', (req, res) => {
     // parameter null check
@@ -117,7 +114,7 @@ router.delete('/', (req, res) => {
         return;
     }
 
-    Blog.remove({blogIdx})
+    Blog.remove(blogIdx)
     .then(({ code, json }) => {
         res.status(code).send(json);
     })
